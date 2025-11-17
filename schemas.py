@@ -12,9 +12,9 @@ Model name is converted to lowercase for the collection name:
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 
-# Example schemas (replace with your own):
+# Example schemas (keep for reference):
 
 class User(BaseModel):
     """
@@ -23,7 +23,7 @@ class User(BaseModel):
     """
     name: str = Field(..., description="Full name")
     email: str = Field(..., description="Email address")
-    address: str = Field(..., description="Address")
+    address: Optional[str] = Field(None, description="Address")
     age: Optional[int] = Field(None, ge=0, le=120, description="Age in years")
     is_active: bool = Field(True, description="Whether user is active")
 
@@ -38,8 +38,39 @@ class Product(BaseModel):
     category: str = Field(..., description="Product category")
     in_stock: bool = Field(True, description="Whether product is in stock")
 
-# Add your own schemas here:
 # --------------------------------------------------
+# Multi-vendor e-commerce schemas
+# --------------------------------------------------
+
+class Vendor(BaseModel):
+    """Vendors collection schema (collection: vendor)"""
+    name: str = Field(..., description="Store name")
+    description: Optional[str] = Field(None, description="Short description about the store")
+    email: str = Field(..., description="Contact email for the vendor")
+
+class CatalogProduct(BaseModel):
+    """Products offered by vendors (collection: catalogproduct)"""
+    vendor_id: str = Field(..., description="Associated vendor id")
+    title: str
+    description: Optional[str] = None
+    price: float = Field(..., ge=0)
+    stock: int = Field(..., ge=0)
+    category: Optional[str] = None
+    images: Optional[List[str]] = None
+
+class OrderItem(BaseModel):
+    product_id: str
+    quantity: int = Field(..., ge=1)
+    price: float = Field(..., ge=0)
+    title: Optional[str] = None
+    vendor_id: Optional[str] = None
+
+class Order(BaseModel):
+    """Orders placed by buyers (collection: order)"""
+    buyer_email: str
+    items: List[OrderItem]
+    total: float = Field(..., ge=0)
+    status: str = Field("pending", description="Order status")
 
 # Note: The Flames database viewer will automatically:
 # 1. Read these schemas from GET /schema endpoint
